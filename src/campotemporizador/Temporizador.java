@@ -10,6 +10,8 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ObjectPropertyBase;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -18,13 +20,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Duration;
+import selectordeslizamiento.SelectorDeslizamiento;
 
 
 public class Temporizador extends AnchorPane {
 
     @FXML
     private Label temporizador;
-
+    private int seg;
     private IntegerProperty segundos = new SimpleIntegerProperty();
     
     public Temporizador(){
@@ -38,8 +41,9 @@ public class Temporizador extends AnchorPane {
         }
     }
     public void setTime(Integer s){
-        temporizador.setText(s.toString());
         segundos.set(s);
+        seg = s;
+        temporizador.setText(s.toString());
     }
     public void iniciarContador(){
         KeyValue tiempo = new KeyValue(segundos, 0);
@@ -54,12 +58,35 @@ public class Temporizador extends AnchorPane {
         final Timeline timeline = new Timeline();
         timeline.setCycleCount(0);
         timeline.setAutoReverse(true);
-        timeline.getKeyFrames().add(new KeyFrame(Duration.millis(10000),onFinished, tiempo));
+        timeline.getKeyFrames().add(new KeyFrame(Duration.seconds(seg),onFinished, tiempo));
         timeline.play();
         
         temporizador.textProperty().bind(segundos.asString());
     }
+    public final ObjectProperty<EventHandler<ActionEvent>> onActionProperty() {
+        return onAction;
+    }
+    public final void setOnAction(EventHandler<ActionEvent> value) {
+        onActionProperty().set(value);
+    }
+    public final EventHandler<ActionEvent> getOnAction() {
+        return onActionProperty().get();
+    }
     
+    private ObjectProperty<EventHandler<ActionEvent>> onAction = new ObjectPropertyBase<EventHandler<ActionEvent>>() {
+        @Override
+        protected void invalidated() {
+            setEventHandler(ActionEvent.ACTION, get());
+        }
+        @Override
+        public Object getBean() {
+            return Temporizador.this;
+        }
+        @Override
+        public String getName() {
+            return "onAction";
+        }
+    };
     
     
 }
